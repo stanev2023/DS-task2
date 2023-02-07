@@ -1,0 +1,33 @@
+import pandas as pd
+import requests
+import json
+# Get all transactions of address
+api_link = 'https://api.polygonscan.com/api?module=account&action=txlist&address=0x5118639e30f555cC30A266971C08b83EF2eD66A3&startblock=0&endblock=99999999&page=1&offset=10&sort=asc&apikey=AI3BS8YDCEJZIGHN24HSFI9IT1373GQKNC%27'
+# Dividing the apilink into two parts - 1 before the page number and the second - after the page number
+api_link_part_one = 'https://api.polygonscan.com/api?module=account&action=txlist&address=0x5118639e30f555cC30A266971C08b83EF2eD66A3&startblock=0&endblock=99999999&page='
+api_link_part_two = '&offset=10&sort=asc&apikey=AI3BS8YDCEJZIGHN24HSFI9IT1373GQKNC%27'
+api_link_part_one_const = 'https://api.polygonscan.com/api?module=account&action=txlist&address=0x5118639e30f555cC30A266971C08b83EF2eD66A3&startblock=0&endblock=99999999&page='
+
+test = requests.get(api_link)
+final_result = test.json().get('result')
+# We start from the second page because we already took the first page
+page = 2
+while (1):
+    # Concatinating the page number
+    api_link_part_one += str(page)
+    # Concatinating the part after the page number
+    api_link_part_one += api_link_part_two
+    request_transactions = requests.get(api_link_part_one)
+    list_of_transactions = request_transactions.json().get('result')
+    if (len(list_of_transactions) != 0):
+        for index in range(len(list_of_transactions)):
+            final_result.append(list_of_transactions[index])
+    else:
+        break
+    page += 1
+    api_link_part_one = api_link_part_one_const
+
+array = json.dumps(final_result)
+df = pd.read_json(array)
+df.to_csv('sample.csv')
+print(df)
